@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.seasonal import seasonal_decompose,STL
 from statsmodels.tsa.stattools import adfuller
 from itertools import product
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+from statsmodels.stats.diagnostic import acorr_ljungbox
 
 # import data 
 df = pd.read_csv("/media/danlof/dan_files/data_science_codes/Timeseries/Antidiabetic/AusAntidiabeticDrug.csv")
@@ -77,27 +79,30 @@ from typing import Union
 from tqdm import tqdm
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
-def optimize_SARIMAX(endog: Union[pd.Series,list],exog: Union[pd.Series,list],order_list,d:int,D:int,s:int) -> pd.DataFrame:
+def optimize_SARIMAX(endog: Union[pd.Series, list], exog: Union[pd.Series, list], order_list: list, d: int, D: int, s: int) -> pd.DataFrame:
+    
     results = []
+    
     for order in tqdm(order_list):
-        try:
+        try: 
             model = SARIMAX(
                 endog,
                 exog,
-                order = (order[0],d,order[1]),
-                seasonal_order=(order[2],D,order[3],s),
-                simple_differencing=False
-            ).fit(disp=False)
+                order=(order[0], d, order[1]),
+                seasonal_order=(order[2], D, order[3], s),
+                simple_differencing=False).fit(disp=False)
         except:
             continue
-
-        aic= model.aic
-        results.append([order,model.aic])
-    
+            
+        aic = model.aic
+        results.append([order, model.aic])
+        
     result_df = pd.DataFrame(results)
-    result_df.columnns = ['(p,q,P,Q)','AIC']
-
+    result_df.columns = ['(p,q,P,Q)', 'AIC']
+    
+    #Sort in ascending order, lower AIC is better
     result_df = result_df.sort_values(by='AIC', ascending=True).reset_index(drop=True)
+    
     return result_df
 
 
@@ -107,9 +112,29 @@ Ps = range(0, 5, 1)
 Qs = range(0, 5, 1)
 
 order_list = list(product(ps, qs, Ps, Qs))
+
 d = 1
 D = 1
 s = 12
 
 SARIMA_result_df = optimize_SARIMAX(train, None, order_list, d, D, s)
-print(SARIMA_result_df)
+SARIMA_result_df
+
+# residual testing
+# use plot_diagnostics to see if the residuals behave like white noise
+SARIMA_model = SARIMAX(train,order=(3,1,1),seasonal_order=(1,1,3,12),simple_differencing=False)
+
+SARIMA_model_fit = SARIMA_model.fit(disp=False)
+SARIMA_model_fit.plot_diagnostics(figsize=(10,8))
+
+
+# Ljung-Box test
+# This determines whether the residuals are independent and uncorrelated
+# So we need p-value>0.05
+residuals = SARIMA_model_fit.resid
+lb_test_results = acorr_ljungbox(residuals, np.arange(1, 11, 1))
+pvalues = lb_test_results["lb_pvalue"]
+print("Ljung-Box test p-values:", pvalues)
+
+
+
