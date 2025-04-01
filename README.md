@@ -22,4 +22,4 @@
 ### Results 
 
 - After performing decomposition on the data we get the following components: Trend , seasonality and the residuals. Which help in determing which model to use:
-![decomposition](/Antidiabetic/results/stl.png)
+![decomposition](results/stl.png)
