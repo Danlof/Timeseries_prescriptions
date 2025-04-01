@@ -8,7 +8,7 @@
 
 #### Steps
 - a. Visualize the timeseries
-- b. Use timeseries decomposition to extract trend,seasonality and the residuals.
+- b. Use timeseries decomposition to extract trend,seasonality components and the residuals.
 - c. Determine the most suitable model
 - d. model the series with:
     - apply transformation to make it stationary
@@ -21,5 +21,5 @@
 
 ### Results 
 
-- After performing decomposition on the data we get the following componets: Trend , seasonality and the residuals. Which help in determing which model to use:
-![decomposition](../Antidiabetic/results/stl.pdf)
+- After performing decomposition on the data we get the following components: Trend , seasonality and the residuals. Which help in determing which model to use:
+![decomposition](../Antidiabetic/results/stl.png)
