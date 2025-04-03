@@ -36,4 +36,14 @@
 - We then perform a seasonal difference; this returns a p-value < 0.05 after testing for stationarity. Hence we reject the null hypothesis , since our data is now stationary.
 - From the above we differenced the series once hence d=1 and performed one seasonal differencing hence D = 1, and since the data is in months m=12.==>SARIMA(p,1,q)(P,1,Q)*<sub>12</sub>*
 
+#### 3. Finding optimal degrees of seasonality and non-seasonality 
+- We have a function `optimize_SARIMAX` that gives optimal parameters that minimize the Akaike information criterion(AIC). These are SARIMA(3,1,1)(1,1,3)*<sub>12</sub>*. ie the minimum the akaike information criterion the better.
+
+#### 4. Residual analysis
+- We need to check whether the residuals behave like white noise using `plot_diagnostics` to quantitatively analyse residuals.
+![residual_diagnostics](results/residual_diagnostics.png)
+    - From the topleft we can see that the residuals have no trend over time and variance seems constant.
+    - On the topright ; the distribution follows a normal distribution whaich is further supported by the QQ plot.
+    - Finally the correlogram at the bottom right shows no significant coeffients after lag 0.
+    - All these are characteristcs of white noise , hence the model can be used further for prediction.
 
