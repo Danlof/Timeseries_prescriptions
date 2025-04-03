@@ -46,4 +46,14 @@
     - On the topright ; the distribution follows a normal distribution whaich is further supported by the QQ plot.
     - Finally the correlogram at the bottom right shows no significant coeffients after lag 0.
     - All these are characteristcs of white noise , hence the model can be used further for prediction.
+- We can also finally check whether the residuals are independent and uncorrelated using the `Ljungbox test`. The p-values we get from the test are all above 0.05 , hence we fail to reject the null hypothesis and conclude that the residuals are independent and uncorrelated, therefore we can use the model for prediction.
 
+#### 5. Forecasting
+- It is important to have a baseline model when forecasting to check if the SARIMA model is better or worse.
+![forecasting](results/forcast.png)
+    - From the above we can see that the SARIMA model follows the actual values better than the baseline model.
+
+#### 5. Evaluation
+- We are using the mean absolute percentage error(MAPE).
+![mape](results/mape.png)
+    - From the above we can conclude that the SARIMA model has a less percentage error compared to the baseline model. It should be used to forecast the number of antidiabetic drugs to be produced.
