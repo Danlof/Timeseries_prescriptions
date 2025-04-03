@@ -79,46 +79,7 @@ from typing import Union
 from tqdm import tqdm
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
-def optimize_SARIMAX(endog: Union[pd.Series, list], exog: Union[pd.Series, list], order_list: list, d: int, D: int, s: int) -> pd.DataFrame:
-    
-    results = []
-    
-    for order in tqdm(order_list):
-        try: 
-            model = SARIMAX(
-                endog,
-                exog,
-                order=(order[0], d, order[1]),
-                seasonal_order=(order[2], D, order[3], s),
-                simple_differencing=False).fit(disp=False)
-        except:
-            continue
-            
-        aic = model.aic
-        results.append([order, model.aic])
-        
-    result_df = pd.DataFrame(results)
-    result_df.columns = ['(p,q,P,Q)', 'AIC']
-    
-    #Sort in ascending order, lower AIC is better
-    result_df = result_df.sort_values(by='AIC', ascending=True).reset_index(drop=True)
-    
-    return result_df
 
-
-ps = range(0, 5, 1)
-qs = range(0, 5, 1)
-Ps = range(0, 5, 1)
-Qs = range(0, 5, 1)
-
-order_list = list(product(ps, qs, Ps, Qs))
-
-d = 1
-D = 1
-s = 12
-
-SARIMA_result_df = optimize_SARIMAX(train, None, order_list, d, D, s)
-SARIMA_result_df
 
 # residual testing
 # use plot_diagnostics to see if the residuals behave like white noise
@@ -136,5 +97,38 @@ lb_test_results = acorr_ljungbox(residuals, np.arange(1, 11, 1))
 pvalues = lb_test_results["lb_pvalue"]
 print("Ljung-Box test p-values:", pvalues)
 
+# forecasting 
 
+def rolling_forecast(df:pd.DataFrame,train_len:int,horizon:int,window:int,method:str)-> list:
+    """A function to generate predictions over the entire test set with a window of 12 months"""
+    total_len = train_len + horizon
+    end_idx = train_len
+
+    if method == 'last_season':
+        pred_last_season = []
+        for i in range(train_len,total_len,window):
+            last_season = df['y'][i-window:i].values
+            pred_last_season.extend(last_season)
+        return pred_last_season
+    elif method == 'SARIMA':
+        pred_SARIMA = []
+        for i in range(train_len,total_len,window):
+            model = SARIMAX(df["y"][:i],order=(3,1,1),seasonal_order=(1,1,3,12),simple_differencing=False)
+            res = model.fit(disp=False)
+            predictions = res.get_predictions(0,i+window-1)
+            oos_pred = predictions.predicted_mean.iloc[-window]
+            pred_SARIMA.extend(oos_pred)
+        return pred_SARIMA
+    
+# define a few parameters
+
+pred_df = df[168:]
+
+TRAIN_LEN = 168
+HORIZON = 36
+WINDOW = 12
+
+# perform the prediction from the SARIMA model
+
+pred_df['SARIMA'] = rolling_forecast(df,TRAIN_LEN,HORIZON,WINDOW)
 
